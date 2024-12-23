@@ -18,7 +18,7 @@ option(IMGUI_FREETYPE "" OFF)
 #option(IMGUI_OPENGL3 "" OFF)
 #option(IMGUI_OSX "" OFF)
 #option(IMGUI_SDL2 "" OFF)
-#option(IMGUI_SDL3 "" OFF)
+option(IMGUI_SDL3 "" OFF)
 #option(IMGUI_SDL2_RENDERER "" OFF)
 option(IMGUI_SDL3_RENDERER "" OFF)
 #option(IMGUI_VULKAN "" ON)
@@ -56,6 +56,10 @@ set(SOURCE_FILES
 #)
 
 if(IMGUI_SDL3_RENDERER)
+    set(IMGUI_SDL3 ON)
+endif()
+
+if(IMGUI_SDL3)
     find_package(SDL3 QUIET)
     message(STATUS "Looking for SDL3...")
     if(SDL3_FOUND)
@@ -73,7 +77,14 @@ if(IMGUI_SDL3_RENDERER)
     else()
         message(WARNING "SDL3 not found, SDL3 backend will not be included")
     endif()
+endif()
 
+if(IMGUI_SDL3_RENDERER)
+    if(SDL3_FOUND)
+        list(APPEND BACKEND_FILES
+            backends/imgui_impl_sdlrenderer3.cpp
+        )
+    endif()
 endif()
 
 if (IMGUI_SHARED)
@@ -82,7 +93,10 @@ if (IMGUI_SHARED)
             ${BACKEND_FILES}
             misc/cpp/imgui_stdlib.cpp
     )
-    set_target_properties(imgui-shared PROPERTIES OUTPUT_NAME "imgui")
+    set_target_properties(imgui-shared PROPERTIES
+            OUTPUT_NAME "imgui"
+            WINDOWS_EXPORT_ALL_SYMBOLS TRUE
+    )
 
     target_include_directories(imgui-shared PUBLIC
             ${CMAKE_CURRENT_SOURCE_DIR}
